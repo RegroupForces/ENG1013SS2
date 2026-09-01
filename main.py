@@ -11,7 +11,10 @@ import time
 callbackStorage: list[list[int,int]] = []
 pushButtonPins = [3,4] #subject to change dependeing on actual implementation
 ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
-lightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red1, yellow1, green1, red2, yellow2, green2]
+trafficLightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red1, yellow1, green1, red2, yellow2, green2]
+pedestrianLightsPins = [14,15] #subject to change dependeing on actual implementation, assumes [red, green]
+
+
 
 def terminate(board: pymata4.Pymata4, outPins: list[int]):
     """
@@ -52,20 +55,21 @@ def callback(data: list):
 
 
 
-def pushBottonCheck(board: pymata4.Pymata4):
+def pushButtonCheck(board: pymata4.Pymata4):
     """
     Helper function that check for a 'switch on' signal.
-    Fetches signal from a predefined list.
+    Fetches signal from a predefined list (callbackStorage).
     The signal should only be push button signals, ultrasonic sensor has other logic.
+    Clears callbackStorage upon returning
 
     Args:
         board: pymata4.Pymata4
         The board initialised by main()
     
     Returns:
-        action: str | None
+        action: int | None
         Returns None if no valid inputs are detected.
-        Otherwise, return "PB" for a press of push buttons.
+        Otherwise, return the pin number that was pressed for a press of push button.
     """
 
     # Insert logic for integration here 
@@ -81,7 +85,8 @@ def pushBottonCheck(board: pymata4.Pymata4):
 
         if signal[1] == 1:
             # Detected a Pushbotton Press
-            return "PB"
+            callbackStorage = []
+            return signal[0]
 
         
 
@@ -113,17 +118,24 @@ def main():
 
     for pin in pushButtonPins:
         board.set_pin_mode_digital_input(pin, callback)
-    for trigger, echo in ultrasonicSensorPins:
-        board.set_pin_mode_sonar(trigger, echo, timeout = 200000)
-    for pin in lightsPins:
+    # for trigger, echo in ultrasonicSensorPins:
+    #     board.set_pin_mode_sonar(trigger, echo, timeout = 200000)
+    for pin in trafficLightsPins:
         board.set_pin_mode_digital_output(pin)
-
+    for pin in pedestrianLightsPins:
+        board.set_pin_mode_digital_output(pin)
     try:
         while True:
-            #insert main cycle logic here, with logic for PB and US detections
-            pass
+            # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
+            buttonResult = pushButtonCheck(board)
+            if buttonResult is not None:
+               print(f"Push Button {buttonResult} is pressed.")
+               time.sleep(2)
+
+
+                
     except KeyboardInterrupt:
-        terminate(board, lightsPins)
+        terminate(board, trafficLightsPins + pedestrianLightsPins)
 
     pass
 
