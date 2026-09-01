@@ -10,7 +10,7 @@ import time
 
 callbackStorage: list[list[int,int]] = []
 pushButtonPins = [3,4] #subject to change dependeing on actual implementation
-ultrasonicSensorPins = [5] #subject to change dependeing on actual implementation
+ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
 lightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red1, yellow1, green1, red2, yellow2, green2]
 
 def terminate(board: pymata4.Pymata4, outPins: list[int]):
@@ -37,7 +37,7 @@ def terminate(board: pymata4.Pymata4, outPins: list[int]):
 def callback(data: list):
     """
     Callback function provided to the board.
-    Preprocess the data sent from the board and calls relavent function to act.
+    Preprocess the data and stores it in a predefined list.
 
     Args:
         data: list
@@ -52,24 +52,20 @@ def callback(data: list):
 
 
 
-def pollInstruction(board: pymata4.Pymata4, pins: list[int]):
+def pushBottonCheck(board: pymata4.Pymata4):
     """
     Helper function that check for a 'switch on' signal.
+    Fetches signal from a predefined list.
+    The signal should only be push button signals, ultrasonic sensor has other logic.
 
     Args:
         board: pymata4.Pymata4
         The board initialised by main()
-
-        pins: list[int]
-        Specifies the pins to check from.
     
     Returns:
         action: str | None
-        Returns None if no inputs are detected.
+        Returns None if no valid inputs are detected.
         Otherwise, return "PB" for a press of push buttons.
-        Otherwise, return "US" for untrasonic sensor detection.
-
-        
     """
 
     # Insert logic for integration here 
@@ -80,12 +76,15 @@ def pollInstruction(board: pymata4.Pymata4, pins: list[int]):
     if len(callbackStorage) == 0:
         return
 
+    while len(callbackStorage) > 0:
+        signal = callbackStorage.pop()
 
-    signal = callbackStorage.pop()
+        if signal[1] == 1:
+            # Detected a Pushbotton Press
+            return "PB"
 
-    if signal[]
+        
 
-    pass
 
 
 
@@ -114,8 +113,8 @@ def main():
 
     for pin in pushButtonPins:
         board.set_pin_mode_digital_input(pin, callback)
-    for pin in ultrasonicSensorPins:
-        board.set_pin_mode_digital_input(pin, callback)
+    for trigger, echo in ultrasonicSensorPins:
+        board.set_pin_mode_sonar(trigger, echo, timeout = 200000)
     for pin in lightsPins:
         board.set_pin_mode_digital_output(pin)
 
