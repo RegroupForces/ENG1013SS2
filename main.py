@@ -11,7 +11,7 @@ import time
 callbackStorage: list[list[int,int]] = []
 pushButtonPins = [3,4] #subject to change dependeing on actual implementation
 ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
-trafficLightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red1, yellow1, green1, red2, yellow2, green2]
+trafficLightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red4, yellow4, green4, red5, yellow5, green5]
 pedestrianLightsPins = [14,15] #subject to change dependeing on actual implementation, assumes [red, green]
 
 
@@ -116,6 +116,7 @@ def main():
 
     board = pymata4.Pymata4()
 
+
     for pin in pushButtonPins:
         board.set_pin_mode_digital_input(pin, callback)
     # for trigger, echo in ultrasonicSensorPins:
@@ -124,13 +125,46 @@ def main():
         board.set_pin_mode_digital_output(pin)
     for pin in pedestrianLightsPins:
         board.set_pin_mode_digital_output(pin)
+
+    #below keeps record of the status of the traffic lights. True = on, False = off
+    #[red, yellow, green]
+    TL4 = [False, False, False]
+    TL5 = [False, False, False]
+    
     try:
         while True:
             # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
             buttonResult = pushButtonCheck(board)
             if buttonResult is not None:
-               print(f"Push Button {buttonResult} is pressed.")
-               time.sleep(2)
+                #Logic for detecting a Push Button press
+                print(f"Push Button {buttonResult} is pressed.")
+                time.sleep(2)
+                if TL5[0]:
+                    # TL5 is red, turn TL4 to yellow
+                    board.digital_write(trafficLightsPins[2], 0)
+                    board.digital_write(trafficLightsPins[1], 1)
+                    time.sleep(3)
+                    #turn TL4 to red
+                    board.digital_write(trafficLightsPins[1], 0)
+                    board.digital_write(trafficLightsPins[0], 1)
+
+                #set PL1/2 to green
+                board.digital_write(pedestrianLightsPins[0], 0)
+                board.digital_write(pedestrianLightsPins[1], 1)
+                time.sleep(3)
+                #set PL1/2 to flashing red
+                board.digital_write(pedestrianLightsPins[1], 0)
+                for _ in range(4):
+                    board.digital_write(pedestrianLightsPins[0], 1)
+                    time.sleep(0.25)
+                    board.digital_write(pedestrianLightsPins[0], 0)
+                    time.sleep(0.25)
+                board.digital_write(pedestrianLightsPins[0], 1)
+                board.digital_write(trafficLightsPins[2], 0)
+                board.digital_write(trafficLightsPins[1], 1)
+
+
+            #Logic for main cycle
 
 
                 
