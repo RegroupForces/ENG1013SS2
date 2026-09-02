@@ -2,7 +2,7 @@
 # Created by: Jianqiu (Jacky) Dong
 # Date Created: 26/08/2026
 # Last Modified: 02/09/2026
-# Version 1.0
+# Version 1.1
 
 
 
@@ -30,7 +30,7 @@ def terminate(board: pymata4.Pymata4, outPins: list[int]):
     Returns:
         None
     """
-    print(f"Terminating with outpins set to {outPins}")
+    # print(f"Terminating with outpins set to {outPins}")
     time.sleep(0.5)
     for pin in outPins:
         board.digital_write(pin, 0)
@@ -51,8 +51,8 @@ def callback(data: list):
     Returns:
         None
     """
-
-    callbackStorage.append(data[:2])
+    # print(data)
+    callbackStorage.append(data[1:3])
 
 
 
@@ -165,6 +165,7 @@ def main():
                 time.sleep(2)
                 if TL5[0]:
                     # TL5 is red, turn TL4 to yellow
+                    print("Turning TL4 to yellow")
                     board.digital_write(trafficLightsPins[0], 0)
                     board.digital_write(trafficLightsPins[1], 1)
                     board.digital_write(trafficLightsPins[2], 0)
@@ -172,8 +173,10 @@ def main():
                     #turn TL4 to red
                     board.digital_write(trafficLightsPins[0], 1)
                     board.digital_write(trafficLightsPins[1], 0)
+                    board.digital_write(trafficLightsPins[2], 0)
                 else:
                     # TL5 is not red, turn TL5 to yellow
+                    print("Turning TL5 to yellow")
                     board.digital_write(trafficLightsPins[3], 0)
                     board.digital_write(trafficLightsPins[4], 1)
                     board.digital_write(trafficLightsPins[5], 0)
