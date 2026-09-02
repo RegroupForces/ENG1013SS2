@@ -30,6 +30,7 @@ def terminate(board: pymata4.Pymata4, outPins: list[int]):
     Returns:
         None
     """
+    print(f"Terminating with outpins set to {outPins}")
     time.sleep(0.5)
     for pin in outPins:
         board.digital_write(pin, 0)
@@ -76,7 +77,8 @@ def pushButtonCheck():
     # Return data early if US5 detected something
 
     # End of integration
-
+    global callbackStorage
+    print(callbackStorage)
     if len(callbackStorage) == 0:
         return
 
@@ -114,6 +116,7 @@ def main():
         None
     """
 
+    
     board = pymata4.Pymata4()
 
 
@@ -149,9 +152,11 @@ def main():
     board.digital_write(pedestrianLightsPins[1], 0)
     TL4 = [False, False, True]
     TL5 = [True, False, False]
-
+    
     try:
         while True:
+            print(f"Cycle Counter = {cycleCounter}")
+            print(f"Cycle State = {cycleState}")
             # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
             buttonResult = pushButtonCheck()
             if buttonResult is not None:
@@ -257,13 +262,9 @@ def main():
             #Universal sleep for all cycles
             time.sleep(1)
 
-
-
-
-                
+    
     except KeyboardInterrupt:
         terminate(board, trafficLightsPins + pedestrianLightsPins)
-    pass
 
 
 if __name__ == "__main__":
