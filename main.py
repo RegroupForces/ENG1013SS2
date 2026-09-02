@@ -153,7 +153,7 @@ def main():
     try:
         while True:
             # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
-            buttonResult = pushButtonCheck(board)
+            buttonResult = pushButtonCheck()
             if buttonResult is not None:
                 #Logic for detecting a Push Button press
                 print(f"Push Button {buttonResult} is pressed.")
