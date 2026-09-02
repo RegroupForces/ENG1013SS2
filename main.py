@@ -2,7 +2,7 @@
 # Created by: Jianqiu (Jacky) Dong
 # Date Created: 26/08/2026
 # Last Modified: 02/09/2026
-# Version 1.1
+# Version 1.2
 
 
 
@@ -10,10 +10,10 @@ from pymata4 import pymata4
 import time
 
 callbackStorage: list[list[int,int]] = []
-pushButtonPins = [3,4] #subject to change dependeing on actual implementation
-ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
-trafficLightsPins = [8,9,10,11,12,13] #subject to change dependeing on actual implementation, assumes [red4, yellow4, green4, red5, yellow5, green5]
-pedestrianLightsPins = [14,15] #subject to change dependeing on actual implementation, assumes [red, green]
+pushButtonPins = [3] #subject to change dependeing on actual implementation
+# ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
+trafficLightsPins = [6,7,8,9,10,11] #subject to change dependeing on actual implementation, assumes [red4, yellow4, green4, red5, yellow5, green5]
+pedestrianLightsPins = [4,5] #subject to change dependeing on actual implementation, assumes [red, green]
 
 
 
@@ -23,14 +23,14 @@ def terminate(board: pymata4.Pymata4, outPins: list[int]):
 
     Args:
         board: pymata4.Pymata4
-        Board to shutdown.
+        Board to shutdown. 
 
         outPins: list[int]
         The pins that are output pins. These pins will be set to 0 (LOW)
     Returns:
         None
     """
-    # print(f"Terminating with outpins set to {outPins}")
+    print(f"Terminating with outpins set to {outPins}")
     time.sleep(0.5)
     for pin in outPins:
         board.digital_write(pin, 0)
