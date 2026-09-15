@@ -1,8 +1,8 @@
 # Code for Tunnel Ave Control Subsystem
 # Created by: Jianqiu (Jacky) Dong
 # Date Created: 26/08/2026
-# Last Modified: 02/09/2026
-# Version 1.2
+# Last Modified: 15/09/2026
+# Version 2.0
 
 
 
@@ -24,8 +24,6 @@ binary          decimal light
 01000000        64      TL5_Yellow
 10000000        128     TL5_Green
 """
-# trafficLightsPins = [6,7,8,9,10,11] #subject to change dependeing on actual implementation, assumes [red4, yellow4, green4, red5, yellow5, green5]
-# pedestrianLightsPins = [4,5] #subject to change dependeing on actual implementation, assumes [red, green]
 SER = shiftRegisterPins[0]
 RCLK = shiftRegisterPins[1]
 SRCLK = shiftRegisterPins[2]
@@ -41,13 +39,13 @@ light_patterns = {
     "TL5_Green" :   0b10000000,
 }
 
-
 DEBUG_MESSAGES = {
     0: "TL4 green for 20s",
     1: "TL4 yellow transition to TL5",
     2: "TL5 green for 10s",
     3: "TL5 tellow transition to TL4"
 }
+
 
 
 def setLightState(light_state: int, val: bool|int, *bits: int):
@@ -65,8 +63,12 @@ def setLightState(light_state: int, val: bool|int, *bits: int):
         The value to change. This should have the format of:
             8 bits in length
             all 0 except for 1
+
+    Returns:
+        light_state: int
+        The value of light_state after it is changed.
     """
-    if val: #setting pins to HIGH, if the target pin is already HIGH then it has no effect.
+    if val: #setting pins to HIGH
         for bit in bits:
             light_state = light_state | bit
     else:   #setting pins to LOW
@@ -101,10 +103,6 @@ def setShiftRegisterPins(board: pymata4.Pymata4, val: int):
     return None
 
 
-    
-
-
-
 def terminate(board: pymata4.Pymata4):
     """
     Helper function that safely shuts off the board.
@@ -125,7 +123,6 @@ def terminate(board: pymata4.Pymata4):
     quit()
 
 
-
 def callback(data: list):
     """
     Callback function provided to the board.
@@ -140,8 +137,6 @@ def callback(data: list):
     """
     # print(data)
     callbackStorage.append(data[1:3])
-
-
 
 
 def pushButtonCheck():
@@ -177,12 +172,6 @@ def pushButtonCheck():
             callbackStorage = []
             return signal[0]
 
-        
-
-
-
-
-
 
 def main():
     """
@@ -195,7 +184,6 @@ def main():
         Check normal cycle
         Sleep for 1 second
         
-    
     Args:
         None
     
@@ -203,9 +191,7 @@ def main():
         None
     """
 
-    
     board = pymata4.Pymata4()
-
 
     for pin in pushButtonPins:
         board.set_pin_mode_digital_input(pin, callback)
@@ -341,130 +327,6 @@ def main():
     
     except KeyboardInterrupt:
         terminate(board)
-  
-
-    
-
-    """
-    # this is the old code to be deleted later
-
-    try:
-        while True:
-            print(f"Cycle Counter = {cycleCounter}")
-            print(f"Cycle State = {cycleState}")
-            # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
-            buttonResult = pushButtonCheck()
-            if buttonResult is not None:
-                #Logic for detecting a Push Button press
-                print(f"Push Button {buttonResult} is pressed.")
-                time.sleep(2)
-                if TL5[0]:
-                    # TL5 is red, turn TL4 to yellow
-                    print("Turning TL4 to yellow")
-                    board.digital_write(trafficLightsPins[0], 0)
-                    board.digital_write(trafficLightsPins[1], 1)
-                    board.digital_write(trafficLightsPins[2], 0)
-                    time.sleep(3)
-                    #turn TL4 to red
-                    board.digital_write(trafficLightsPins[0], 1)
-                    board.digital_write(trafficLightsPins[1], 0)
-                    board.digital_write(trafficLightsPins[2], 0)
-                else:
-                    # TL5 is not red, turn TL5 to yellow
-                    print("Turning TL5 to yellow")
-                    board.digital_write(trafficLightsPins[3], 0)
-                    board.digital_write(trafficLightsPins[4], 1)
-                    board.digital_write(trafficLightsPins[5], 0)
-                    time.sleep(3)
-                    #turn TL5 to red
-                    board.digital_write(trafficLightsPins[3], 1)
-                    board.digital_write(trafficLightsPins[4], 0)
-
-                #set PL1/2 to green
-                board.digital_write(pedestrianLightsPins[0], 0)
-                board.digital_write(pedestrianLightsPins[1], 1)
-                time.sleep(3)
-                #set PL1/2 to flashing red
-                board.digital_write(pedestrianLightsPins[1], 0)
-                for _ in range(4):
-                    board.digital_write(pedestrianLightsPins[0], 1)
-                    time.sleep(0.25)
-                    board.digital_write(pedestrianLightsPins[0], 0)
-                    time.sleep(0.25)
-                board.digital_write(pedestrianLightsPins[0], 1)
-                # PLs is now red, change TL4 to green and start new main cycle from here
-                board.digital_write(trafficLightsPins[0], 0)
-                board.digital_write(trafficLightsPins[2], 1)
-                cycleCounter = 0
-                cycleState = 0
-                continue
-
-            # This is the main cycle
-            if cycleCounter >= 20 and cycleState == 0:
-                # If TL4 has been green for 20 sec
-                # Turn TL4 to yellow
-                board.digital_write(trafficLightsPins[0], 0)
-                board.digital_write(trafficLightsPins[1], 1)
-                board.digital_write(trafficLightsPins[2], 0)
-                TL4 = [False, True, False]
-                cycleCounter = 0
-                cycleState = 1
-                continue
-
-            elif cycleCounter >= 3 and cycleState == 1:
-                # If TL4 has passed the 3 second yellow light
-                # Turn TL4 to red and TL5 to green
-                board.digital_write(trafficLightsPins[0], 1)
-                board.digital_write(trafficLightsPins[1], 0)
-                board.digital_write(trafficLightsPins[2], 0)
-                board.digital_write(trafficLightsPins[3], 0)
-                board.digital_write(trafficLightsPins[4], 0)
-                board.digital_write(trafficLightsPins[5], 1)
-                TL4 = [True, False, False]
-                TL5 = [False, False, True]
-                cycleCounter = 0
-                cycleState = 2
-                continue
-
-
-            elif cycleCounter >= 10 and cycleState == 2:
-                # If TL5 has been green for 10 sec
-                # Turn TL5 to yellow
-                board.digital_write(trafficLightsPins[3], 0)
-                board.digital_write(trafficLightsPins[4], 1)
-                board.digital_write(trafficLightsPins[5], 0)
-                TL5 = [False, True, False]
-                cycleCounter = 0
-                cycleState = 3
-                continue
-
-            elif cycleCounter >= 3 and cycleState == 3:
-                # If TL5 has passed the 3 second yellow light
-                # Turn TL5 to red and TL4 to green
-                board.digital_write(trafficLightsPins[0], 0)
-                board.digital_write(trafficLightsPins[1], 0)
-                board.digital_write(trafficLightsPins[2], 1)
-                board.digital_write(trafficLightsPins[3], 1)
-                board.digital_write(trafficLightsPins[4], 0)
-                board.digital_write(trafficLightsPins[5], 0)
-                TL4 = [False, False, True]
-                TL5 = [True, False, False]
-                cycleCounter = 0
-                cycleState = 0
-                continue
-
-            else:
-                # Nothing important happens in cycle, increment counter
-                cycleCounter += 1
-
-            #Universal sleep for all cycles
-            time.sleep(1)
-        
-    
-    except KeyboardInterrupt:
-        terminate(board, trafficLightsPins + pedestrianLightsPins)
-        """
-
 
 if __name__ == "__main__":
     main()
