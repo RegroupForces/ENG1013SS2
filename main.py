@@ -14,15 +14,16 @@ pushButtonPins = [3] #subject to change dependeing on actual implementation
 # ultrasonicSensorPins = (5,6) #subject to change dependeing on actual implementation, assumes (trigger pin, echo pin)
 shiftRegisterPins = [4,5,6] #assumes (SER, RCLK, SRCLK)
 """Shift Register has the following ocrrospondence:
-binary          decimal light
-00000001        1       PL_Red
-00000010        2       PL_Green
-00000100        4       TL4_Red
-00001000        8       TL4_Yellow
-00010000        16      TL4_Green
-00100000        32      TL5_Red
-01000000        64      TL5_Yellow
-10000000        128     TL5_Green
+binary                  decimal Meaning         Shift Regester  Pin
+0000000000000001        1       PL Red          1               Qa
+0000000000000010        2       PL Green        1               Qb
+0000000000000100        4       TL4 Red         1               Qc
+0000000000001000        8       TL4 Yellow      1               Qd
+0000000000010000        16      TL4 Green       1               Qe
+0000000000100000        32      TL5 Red         1               Qf
+0000000001000000        64      TL5 Yellow      1               Qg
+0000000010000000        128     TL5 Green       1               Qh
+1000000000000000        256     556 Timer Reset 2               Qh
 """
 SER = shiftRegisterPins[0]
 RCLK = shiftRegisterPins[1]
@@ -37,7 +38,7 @@ light_patterns = {
     "TL5_Red"       :   0b0000000000100000,
     "TL5_Yellow"    :   0b0000000001000000,
     "TL5_Green"     :   0b0000000010000000,
-    "556TimerReset" :   0b0000000100000000
+    "556TimerReset" :   0b1000000000000000
 }
 
 DEBUG_MESSAGES = {
