@@ -15,8 +15,8 @@ pushButtonPins = [3] #subject to change dependeing on actual implementation
 shiftRegisterPins = [4,5,6] #assumes (SER, RCLK, SRCLK)
 """Shift Register has the following ocrrospondence:
 binary                  decimal Meaning         Shift Regester  Pin
-0000000000000001        1       PL Red          1               Qa
-0000000000000010        2       PL Green        1               Qb
+0100000000000000        1       PL Red          2               Qg
+0010000000000000        2       PL Green        2               Qf
 0000000000000100        4       TL4 Red         1               Qc
 0000000000001000        8       TL4 Yellow      1               Qd
 0000000000010000        16      TL4 Green       1               Qe
@@ -162,7 +162,7 @@ def pushButtonCheck():
 
     # End of integration
     global callbackStorage
-    print(callbackStorage)
+    print(f"CallbackStorage: {callbackStorage}")
     if len(callbackStorage) == 0:
         return
 
@@ -221,7 +221,7 @@ def main():
 
     try:
         while True:
-            print(f"Current Cycle Time: {cycleCounter + 1}")
+            print(f"Current Cycle Time: {cycleCounter + 1}s")
             print(f"Current state is: {DEBUG_MESSAGES[cycleState]}")
             # the main cycle operates every 1 second. This is subject to change for integration with ultrasonic sensor.
             buttonResult = pushButtonCheck()
@@ -237,6 +237,7 @@ def main():
                     setShiftRegisterPins(board, light_state)
                     time.sleep(3)
                     #turn TL4 to red
+                    print("Turning TL4 to red")
                     light_state = setLightState(light_state, 1, light_patterns["TL4_Red"])
                     light_state = setLightState(light_state, 0, light_patterns["TL4_Yellow"], light_patterns["TL4_Green"])
                     setShiftRegisterPins(board, light_state)
@@ -248,26 +249,30 @@ def main():
                     setShiftRegisterPins(board, light_state)
                     time.sleep(3)
                     #turn TL5 to red
+                    print("Turning TL5 to red")
                     light_state = setLightState(light_state, 1, light_patterns["TL5_Red"])
                     light_state = setLightState(light_state, 0, light_patterns["TL5_Yellow"], light_patterns["TL5_Green"])
                     setShiftRegisterPins(board, light_state)
 
                 #set PL1/2 to green
-                    light_state = setLightState(light_state, 1, light_patterns["PL_Green"])
-                    light_state = setLightState(light_state, 0, light_patterns["PL_Red"])
-                    setShiftRegisterPins(board, light_state)
+                print("Setting PLs to green")
+                light_state = setLightState(light_state, 1, light_patterns["PL_Green"])
+                light_state = setLightState(light_state, 0, light_patterns["PL_Red"])
+                setShiftRegisterPins(board, light_state)
                 time.sleep(3)
                 #set PL1/2 to flashing red
                 light_state = setLightState(light_state, 0, light_patterns["PL_Green"])
                 setShiftRegisterPins(board, light_state)
 
                 # set timer reset to on to enable flashing
+                print("Setting PLs to red and timer to on")
                 light_state = setLightState(light_state, 1, light_patterns["556TimerReset"])
                 setShiftRegisterPins(board, light_state)
 
                 time.sleep(2)
 
                 #disable timer to stop flashing
+                print("Setting timer to off and PLs to red")
                 light_state = setLightState(light_state, 0, light_patterns["556TimerReset"])
                 setShiftRegisterPins(board, light_state)
 
@@ -276,6 +281,7 @@ def main():
 
 
                 # PLs is now red, change TL4 to green and start new main cycle from here
+                print("Resetting SS to initial state from push button press")
                 light_state = 0
                 light_state = setLightState(light_state, 1, light_patterns["PL_Red"], light_patterns["TL4_Green"], light_patterns["TL5_Red"])
                 setShiftRegisterPins(board, light_state)
