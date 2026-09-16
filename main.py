@@ -29,14 +29,15 @@ RCLK = shiftRegisterPins[1]
 SRCLK = shiftRegisterPins[2]
 
 light_patterns = {
-    "PL_Red"    :   0b00000001,
-    "PL_Green":     0b00000010,
-    "TL4_Red"   :   0b00000100,
-    "TL4_Yellow":   0b00001000,
-    "TL4_Green" :   0b00010000,
-    "TL5_Red"   :   0b00100000,
-    "TL5_Yellow":   0b01000000,
-    "TL5_Green" :   0b10000000,
+    "PL_Red"        :   0b0000000000000001,
+    "PL_Green"      :   0b0000000000000010,
+    "TL4_Red"       :   0b0000000000000100,
+    "TL4_Yellow"    :   0b0000000000001000,
+    "TL4_Green"     :   0b0000000000010000,
+    "TL5_Red"       :   0b0000000000100000,
+    "TL5_Yellow"    :   0b0000000001000000,
+    "TL5_Green"     :   0b0000000010000000,
+    "556TimerReset" :   0b0000000100000000
 }
 
 DEBUG_MESSAGES = {
@@ -90,7 +91,7 @@ def setShiftRegisterPins(board: pymata4.Pymata4, val: int):
     Returns:
         None
     """
-    for i in range(8):
+    for i in range(16):
         bit = (val >> i) & 1
         board.digital_write(SER, bit)
         board.digital_write(SRCLK, 1)
@@ -258,15 +259,21 @@ def main():
                 #set PL1/2 to flashing red
                 light_state = setLightState(light_state, 0, light_patterns["PL_Green"])
                 setShiftRegisterPins(board, light_state)
-                for _ in range(4):
-                    light_state = setLightState(light_state, 1, light_patterns["PL_Red"])
-                    setShiftRegisterPins(board, light_state)
-                    time.sleep(0.25)
-                    light_state = setLightState(light_state, 0, light_patterns["PL_Red"])
-                    setShiftRegisterPins(board, light_state)
-                    time.sleep(0.25)
+
+                # set timer reset to on to enable flashing
+                light_state = setLightState(light_state, 1, light_patterns["556TimerReset"])
+                setShiftRegisterPins(board, light_state)
+
+                time.sleep(2)
+
+                #disable timer to stop flashing
+                light_state = setLightState(light_state, 0, light_patterns["556TimerReset"])
+                setShiftRegisterPins(board, light_state)
+
                 light_state = setLightState(light_state, 1, light_patterns["PL_Red"])
                 setShiftRegisterPins(board, light_state)
+
+
                 # PLs is now red, change TL4 to green and start new main cycle from here
                 light_state = 0
                 light_state = setLightState(light_state, 1, light_patterns["PL_Red"], light_patterns["TL4_Green"], light_patterns["TL5_Red"])
